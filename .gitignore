@@ -1,0 +1,15 @@
+*.aux
+*.fdb_latexmk
+*.fls
+*.txt
+*.out
+*.gz
+*.toc
+*.log
+*.lof
+*.dat
+
+/lab1/__pycache__
+/lab2/__pycache__
+/lab3/__pycache__
+/course/__pycache__
