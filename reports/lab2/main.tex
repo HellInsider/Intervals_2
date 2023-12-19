@@ -1,0 +1,195 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage[hidelinks]{hyperref}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{shorttoc}
+\usepackage{cmap}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english, russian]{babel}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{float}
+\graphicspath{{./img/}}
+
+\definecolor{linkcolor}{HTML}{000000}
+\definecolor{urlcolor}{HTML}{0085FF}
+\hypersetup{pdfstartview=FitH,  linkcolor=linkcolor,urlcolor=urlcolor, colorlinks=true}
+
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+
+\renewcommand*\contentsname{Содержание}
+
+\newcommand{\plot}[3]{
+    \begin{figure}[H]
+        \begin{center}
+            \includegraphics[scale=0.6]{#1}
+            \caption{#2}
+            \label{#3}
+        \end{center}
+    \end{figure}
+}
+
+\begin{document}
+    \include{title}
+    \newpage
+
+    \tableofcontents
+    \listoffigures
+    \newpage
+
+    \section{Постановка задачи}
+    Необходимо для заданных выборок найти точную линейную регрессию, информационные множества и коридоры решений. Сравнить полученные результаты.
+    \section{Теория}
+    \subsection{Точечная линейная регрессия}
+    \quad Рассматривается задача восстановления зависимости для выборки
+    $ (X, \textbf(Y))$, $ X = \{x_i\}_{i=1}^{n}, \textbf{Y} = \{\textbf{y}_i\}_{i=1}^{n} $,
+    $ x_i $ - точеный, $ \textbf{y}_i $ - интервальный.
+    Пусть искомая модель задана в классе линейных функций
+
+    \begin{equation}
+        y = \beta_0 + \beta_1 x
+        \label{e:model}
+    \end{equation}
+
+    Поставим задачу оптимизацию \ref{e:task} для нахождения точечных оценок
+    параметров $ \beta_0, \beta_1 $.
+
+    \begin{equation}
+        \begin{gathered}
+            \sum_{i = 1}^{m}w_{i} \to \min \\
+            \text{mid}\textbf{y}_{i} - w_{i} \cdot \text{rad}\textbf{y}_{i} \leq X\beta \leq \text{mid}\textbf{y}_{i} + w_{i} \cdot \text{rad}\textbf{y}_{i} \\
+            w_{i} \geq 0, i = 1, ..., m \\
+            w, \beta - ?
+        \end{gathered}
+        \label{e:task}
+    \end{equation}
+    
+    Задачу \ref{e:task} можно решить методами линейного программирования.
+
+    \subsection{Информационное множество}
+    \quad \textsl{Информационным множеством} задачи восстановления зависимости
+    будем называть множество значений всех параметров зависимости,
+    совместных с данными в каком-то смысле. 
+
+    \textsl{Коридором совместных зависимостей} задачи восстановления зависимости
+    называется многозначное множество отображений $ \Upsilon $, сопоставляющее
+    каждому значению аргумента $ x $ множество
+    
+    \begin{equation}
+        \Upsilon(x) = \bigcup_{\beta \in \Omega} f(x, \beta)
+    \end{equation}
+    , где $ \Omega $ - информационное множество, $ x $ - вектор переменных, $ \beta $ - вектор оцениваемых параметров. 
+
+    Информационное множество может быть построено, как пересечение полос, заданных
+    
+    \begin{equation}
+        \underline{\textbf{y}_i} \leq \beta_0 + \beta_1 x_{i1} + ... + \beta_m x_{im} \leq \overline{\textbf{y}_i}
+    \end{equation}
+    , где $ i = \overline{1, n} \textbf{y}_i \in \textbf{Y}, x_i \in X $, $ X $ - точечная выборка переменных,
+    $ \textbf{Y} $ - интервальная выборка откликов.
+
+    \section{Реализация}
+    \quad Проект реализован на языке Python v. 3.2.5.
+    \href{https://github.com/HellInsider/Intervals_2}{GitHub}.
+
+    \section{Результаты}
+    \quad Данные $ S_X $ были взяты из файлов \textsl{data/dataset1/X/X\_0.txt}, \newline
+    где $ X \in \{-0\_5, -0\_25, +0\_25, +0\_5 \} $.
+    Набор $ \delta_i $ получен из соответствующих файлов в \textsl{data/dataset1/ZeroLine.txt}.
+
+    Набор значений $ X $ точечный и одинаков для всех выборок. \newline
+    $ X = [-0.5, -0.25, 0.25, 0.5]  $.
+    Набор значений отклика $ Y $ интервальный и разный для каждой выборки.
+    
+    Построим линейную регрессию и найдём информационное множество для нескольких выборок.
+
+    Рассмотрим первую выборку $ Y_1 $.
+    $ Y_1 $ следующим образом. $ y_i = [\min_{t \in S_i}{S_i}, \max_{t \in S_i}{S_i}]$,
+    $ i = [-0.5, -0.25, +0.25, +0.25], y_i \in Y_1 $.
+    \plot{Y1}{Первая выборка, $ Y_1 $}{p:sampleY1}
+
+    % Индекс Жаккара первой выборки равен $ JK(Y_1) = 0.03001 $ (в этой работе $ JK(X) \in [0, 1] $).
+
+    Построим линейную регрессию, решив задачу \ref{e:task} для выборки $ Y_1 $.
+    \plot{PointRegressionY1}{Точечная линейная регрессия для $ Y_1 $}{p:regressionY1}
+    
+    Получим следующие оценки для параметров: $ \beta_0 = 0.00076, \beta_1 = 0.86426 $.
+    Тогда полученная модель имеет вид $ y = 0.00076 + 0.86426 x $.
+
+    Найдём для данной выборки информационное множество.
+    \plot{InformSetY1}{Информационное множество для $ Y_1 $}{p:informSetY1}
+
+    На рис. \ref{p:informSetY1} можно заметит, что найденные параметры
+    $ \beta_0, \beta_1 $ решением задачи \ref{e:task} лежат внутри информационного множества.
+
+    Построим коридор совместных значений для выборки $ Y_1 $ и информационного множества \ref{p:informSetY1}
+    и оценим значения выходной переменной $ y $ вне пределов значений входной переменной $ x $.
+    \plot{InformSetCorridorY1}{Коридор совместных значений для $ Y_1 $}{p:informSetCorridorY1}
+
+    На рис. \ref{p:informSetCorridorY1} видно, что построенная точечная регрессия лежит внутри коридора совместных значений,
+    что согласуется с рис. \ref{p:informSetY1}.
+
+    Проведём аналогичные построения для выборки $ Y_2 $, построенную следующим образом.
+    $ y_i = [median(S_i) - \varepsilon, median(S_i) + \varepsilon] $, $ \varepsilon = \frac{1}{2^{14}} $
+    $ i = [-0.5, -0.25, +0.25, +0.25], y_i \in Y_2 $.
+    $ Y_2 $ имеет вид.
+    \plot{Y2}{Вторая выборка, $ Y_2 $}{p:sampleY2}
+    
+    % Индекс Жаккра $ Y_2 $ равен $ JK(Y_2) = 0.0141 $.
+
+    Построим точечную линейную регрессию для $ Y_2 $.
+    \plot{PointRegressionY2}{Точечная линейная регрессия для $ Y_2 $}{p:regressionY2}
+
+    Для $ Y_2 $ получили следующие оценки параметров: $ \beta_0 = 0.0005, \beta_1 = 0.85324 $.
+    Построим информационное множество и коридор совместных значений для $ Y_2 $.
+
+    \plot{InformSetY2}{Информационное множество для $ Y_2 $}{p:informSetY2}
+    \plot{InformSetCorridorY2}{Коридор совместных значений для $ Y_2 $}{p:informSetCorridorY2}
+
+    В итоге для $ Y_2 $ получили, что точечная регрессия также попала в информационное множество.
+
+    Теперь проведём аналогичные построения для $ Y_3 $, построенную аналогично $ Y_1 $,
+    за исключением отсутствия учёта $ \delta_i $.
+    $ Y_3 $ имеет вид.
+    \plot{Y3}{Третья выборка, $ Y_3 $}{p:sampleY3}
+
+    Построим точечную регрессию.
+    \plot{PointRegressionY3}{Точечная линейная регрессия для $ Y_3 $}{p:regressionY3}
+
+    Для $ Y_3 $ точечная линейная регрессия дала следующие оценки: $ \beta_0 = -0.0052, \beta_1 = 0.85169 $.
+    Информационное множество и коридор совместных значений имеют следующий вид.
+
+    \plot{InformSetY3}{Информационное множество для $ Y_3 $}{p:informSetY3}
+    \plot{informSetCorridorY3}{Коридор совместных значений для $ Y_3 $}{p:informSetCorridorY3}
+
+    \section{Обсуждение}
+    \quad Из полученных результатов можно заметить следующее.
+    Наиболее маленькое информационное множество было получено для выборки $ Y_2 $
+    (рис. \ref{p:informSetY1}, \ref{p:informSetY2}, \ref{p:informSetY3}),
+    что неудивительно, так как $ Y_2 $ имеет наименьшую интервальную неопределённость.
+    Соответственно для $ Y_2 $ получили и наиболее узкий коридор совместных значений
+    (рис. \ref{p:informSetCorridorY1}, \ref{p:informSetCorridorY2}, \ref{p:informSetCorridorY3}).
+
+    \begin{table}[H]
+        \begin{tabular}{| c | c | c |}
+            \hline
+            0 & $ \beta_0 $ & $ \beta_1 $ \\
+            \hline
+            $ Y_1 $ & $ 0.00076 $ & $ 0.86426 $ \\
+            \hline
+            $ Y_2 $ & $ 0.0005 $ & $ 0.85324 $ \\
+            \hline
+            $ Y_3 $ & $ -0.0052 $ & $ 0.85169 $ \\
+            \hline
+        \end{tabular}
+        \centering
+    \end{table}
+    
+    Видно, что для выборок $ Y_1, Y_2 $ точечная линейная регрессия дала более точный результат,
+    близкий к ожидаемому $ \beta_0 = 0.0, \beta_1 = 1.0 $. Для $ Y_3 $ получили более неточную оценку,
+    так оценка параметра $ \beta_0 $ для $ Y_3 $ отличается на порядок от соответствующей оценки для $ Y_1, Y_2 $.
+
+    Также стоит отметить, что во всех случаях точечная линейная регрессия попала в информационное множество.
+\end{document}
