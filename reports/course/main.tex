@@ -1,0 +1,136 @@
+\documentclass[a4paper,12pt]{article}
+
+\usepackage[hidelinks]{hyperref}
+\usepackage{amsmath}
+\usepackage{mathtools}
+\usepackage{shorttoc}
+\usepackage{cmap}
+\usepackage[T2A]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[english, russian]{babel}
+\usepackage{xcolor}
+\usepackage{graphicx}
+\usepackage{float}
+\graphicspath{{./img/}}
+
+\definecolor{linkcolor}{HTML}{000000}
+\definecolor{urlcolor}{HTML}{0085FF}
+\hypersetup{pdfstartview=FitH,  linkcolor=linkcolor,urlcolor=urlcolor, colorlinks=true}
+
+\DeclarePairedDelimiter{\floor}{\lfloor}{\rfloor}
+
+\renewcommand*\contentsname{Содержание}
+
+\newcommand{\plot}[3]{
+    \begin{figure}[H]
+        \begin{center}
+            \includegraphics[scale=0.6]{#1}
+            \caption{#2}
+            \label{#3}
+        \end{center}
+    \end{figure}
+}
+
+\begin{document}
+    \include{title}
+    \newpage
+
+    \tableofcontents
+    \listoffigures
+    \newpage
+
+    \section{Постановка задачи}
+    Необходимо для заданных выборок найти точную линейную регрессию, информационные множества и коридоры решений. Сравнить полученные результаты.
+    \section{Теория}
+    \subsection{Точечная линейная регрессия}
+    \quad Рассматривается задача восстановления зависимости для выборки
+    $ (X, \textbf(Y))$, $ X = \{x_i\}_{i=1}^{n}, \textbf{Y} = \{\textbf{y}_i\}_{i=1}^{n} $,
+    $ x_i $ - точеный, $ \textbf{y}_i $ - интервальный.
+    Пусть искомая модель задана в классе линейных функций
+
+    \begin{equation}
+        y = \beta_0 + \beta_1 x
+        \label{e:model}
+    \end{equation}
+
+    Поставим задачу оптимизацию \ref{e:task} для нахождения точечных оценок
+    параметров $ \beta_0, \beta_1 $.
+
+    \begin{equation}
+        \begin{gathered}
+            \sum_{i = 1}^{m}w_{i} \to \min \\
+            \text{mid}\textbf{y}_{i} - w_{i} \cdot \text{rad}\textbf{y}_{i} \leq X\beta \leq \text{mid}\textbf{y}_{i} + w_{i} \cdot \text{rad}\textbf{y}_{i} \\
+            w_{i} \geq 0, i = 1, ..., m \\
+            w, \beta - ?
+        \end{gathered}
+        \label{e:task}
+    \end{equation}
+    
+    Задачу \ref{e:task} можно решить методами линейного программирования.
+
+    \subsection{Информационное множество}
+    \quad \textsl{Информационным множеством} задачи восстановления зависимости
+    будем называть множество значений всех параметров зависимости,
+    совместных с данными в каком-то смысле. 
+
+    \textsl{Коридором совместных зависимостей} задачи восстановления зависимости
+    называется многозначное множество отображений $ \Upsilon $, сопоставляющее
+    каждому значению аргумента $ x $ множество
+    
+    \begin{equation}
+        \Upsilon(x) = \bigcup_{\beta \in \Omega} f(x, \beta)
+    \end{equation}
+    , где $ \Omega $ - информационное множество, $ x $ - вектор переменных, $ \beta $ - вектор оцениваемых параметров. 
+
+    Информационное множество может быть построено, как пересечение полос, заданных
+    
+    \begin{equation}
+        \underline{\textbf{y}_i} \leq \beta_0 + \beta_1 x_{i1} + ... + \beta_m x_{im} \leq \overline{\textbf{y}_i}
+    \end{equation}
+    , где $ i = \overline{1, n} \textbf{y}_i \in \textbf{Y}, x_i \in X $, $ X $ - точечная выборка переменных,
+    $ \textbf{Y} $ - интервальная выборка откликов.
+
+    \section{Реализация}
+    \quad Проект реализован на языке Python v. 3.2.5.
+    \href{https://github.com/HellInsider/Intervals_2}{GitHub}.
+
+    \section{Результаты}
+    \quad Данные $ S_X $ были взяты из файлов \textsl{data/poly\_i.csv}, \newline
+    где $ i \in \{0, 1, ... , 9\} $. \newline
+    
+    Набор значений $ X $ точечный и одинаков для всех выборок. \newline
+    $ X = [-0.5, -0.35714286, -0.21428571, -0.07142857, 0.07142857, 0.21428571, 0.35714286, 0.5]  $.
+    Набор значений отклика $ Y $ - интервальный.
+    
+    Построим линейную регрессию и найдём информационное множество.
+
+    Рассмотрим выборку $ Y $ следующим образом. $ y = [\min_{t \in S_i}{S_i}, \max_{t \in S_i}{S_i}]$, \newline
+    $ y_i \in Y_1 $.
+    \plot{Y1}{Визуальзация выборки, $ Y_1 $}{p:sampleY1}
+
+    % Индекс Жаккара первой выборки равен $ JK(Y_1) = 0.03001 $ (в этой работе $ JK(X) \in [0, 1] $).
+
+    Построим линейную регрессию, решив задачу \ref{e:task} для выборки $ Y_1 $.
+    \plot{PointRegressionY1}{Точечная линейная регрессия для $ Y_1 $}{p:regressionY1}
+    
+    Получим следующие оценки для параметров: $ \beta_0 = 6.333, \beta_1 = 10.267 $.
+    Тогда полученная модель имеет вид $ y = 6.333 + 10.267 x $.
+
+    Найдём для данной выборки информационное множество.
+    \plot{InformSetY1}{Информационное множество для $ Y_1 $}{p:informSetY1}
+
+    На рис. \ref{p:informSetY1} можно заметит, что найденные параметры
+    $ \beta_0, \beta_1 $ решением задачи \ref{e:task} лежат внутри информационного множества.
+
+    Построим коридор совместных значений для выборки $ Y_1 $ и информационного множества \ref{p:informSetY1}
+    и оценим значения выходной переменной $ y $ вне пределов значений входной переменной $ x $.
+    \plot{InformSetCorridorY1}{Коридор совместных значений для $ Y_1 $}{p:informSetCorridorY1}
+
+    На рис. \ref{p:informSetCorridorY1} видно, что построенная точечная регрессия лежит внутри коридора совместных значений,
+    что согласуется с рис. \ref{p:informSetY1}.
+
+    \section{Обсуждение}
+    \quad Полученные результаты в виде больших параметров $ \beta_0 , \beta_1 $, а также широкого коридора совместных решений обусловлены большой нтервальной неопределённостью.
+    Также стоит отметить, что точечная линейная регрессия попала в информационное множество.
+   
+\end{document}
