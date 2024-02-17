@@ -98,7 +98,9 @@ def main():
     samples = []
     samples_err = []
     dataArr, deltaArr = [], []
-    while i<9:
+  
+    
+    while i<10:
         data, delta, sample_err = dataBuilder.load_data(DataSample.kPlus05, i)
         dataArr.append(data)
         deltaArr.append(delta)
@@ -106,11 +108,33 @@ def main():
         #deltaArr+=delta
 
         samples_err.append(sample_err)
-        sample = [x_k - delta_k for x_k, delta_k in zip(data, delta)]
+        sample = [x_k - delta_k for x_k, delta_k in zip(data, sample_err)]
         #sample = [x_k - delta for x_k, delta in zip(data, delta)]
         samples.append(sample)
-        i+=1
+       
         
+        sample_name = "sampleY"+str(i)
+        ys = [Interval(x_k, x_k - err_k) for x_k, err_k in zip(data, sample_err)]
+        #ys = [Interval(x_k, z_k) for x_k, z_k in zip(data, delta)]
+        xs = linspace(-0.5, 0.5, len(ys))
+        
+        print(f'Jaccard Index of {sample_name}: {Interval.jaccard_index(ys)}')
+
+        regression = LinearRegression(xs, ys)
+        regression.build_point_regression()
+        regression.build_inform_set()
+
+        plotter = Plotter()
+        plotter.plot_sample(xs, ys, True, sample_name)
+        plotter.plot(regression, sample_name)
+
+        plotter.plot_corridor(regression, predict=True, title=sample_name)
+
+        points = [
+            Plotter.Point(regression.regression_params[1], regression.regression_params[0], 'point regression')
+            ]
+        plotter.plot_inform_set(regression.inform_set, points, sample_name)
+        i+=1
 
 
     # data, deltas = dataBuilder.load_data(DataSample.kPlus05, 0)
@@ -136,32 +160,32 @@ def main():
     #sampels = [sampleM05, sampleM025, sampleP025, sampleP05]
 
     #ys_1 = [Interval(min(sample), max(sample)) for sample in samples]
-    ys_1 = [Interval(min(sample), max(sample)) for sample in samples]
-    ys_2 = []
-    for sample in samples:
-        med = median(sample)
-        ys_2.append(Interval(med - dataBuilder.get_eps(), med + dataBuilder.get_eps()))
-    #ys_3 = [Interval(min(sample), max(sample)) for sample in samples_err]
-    ys_3 = [Interval(min(sample), max(sample)) for sample in samples_err]
+    # ys_1 = [Interval(min(sample), max(sample)) for sample in samples]
+    # ys_2 = []
+    # for sample in samples:
+    #     med = median(sample)
+    #     ys_2.append(Interval(med - dataBuilder.get_eps(), med + dataBuilder.get_eps()))
+    # #ys_3 = [Interval(min(sample), max(sample)) for sample in samples_err]
+    # ys_3 = [Interval(min(sample), max(sample)) for sample in samples_err]
 
-    for ys, sample_name in zip([ys_1, ys_2, ys_3], ['Y1', 'Y2', 'Y3']):
-        xs = linspace(-0.5, 0.5, len(ys))
-        print(f'Jaccard Index of {sample_name}: {Interval.jaccard_index(ys)}')
+    # for ys, sample_name in zip([ys_1, ys_2, ys_3], ['Y1', 'Y2', 'Y3']):
+    #     xs = linspace(-0.5, 0.5, len(ys))
+    #     print(f'Jaccard Index of {sample_name}: {Interval.jaccard_index(ys)}')
 
-        regression = LinearRegression(xs, ys)
-        regression.build_point_regression()
-        regression.build_inform_set()
+    #     regression = LinearRegression(xs, ys)
+    #     regression.build_point_regression()
+    #     regression.build_inform_set()
 
-        plotter = Plotter()
-        plotter.plot_sample(xs, ys, True, sample_name)
-        plotter.plot(regression, sample_name)
+    #     plotter = Plotter()
+    #     plotter.plot_sample(xs, ys, True, sample_name)
+    #     plotter.plot(regression, sample_name)
 
-        plotter.plot_corridor(regression, predict=True, title=sample_name)
+    #     plotter.plot_corridor(regression, predict=True, title=sample_name)
 
-        points = [
-            Plotter.Point(regression.regression_params[1], regression.regression_params[0], 'point regression')
-            ]
-        plotter.plot_inform_set(regression.inform_set, points, sample_name)
+    #     points = [
+    #         Plotter.Point(regression.regression_params[1], regression.regression_params[0], 'point regression')
+    #         ]
+    #     plotter.plot_inform_set(regression.inform_set, points, sample_name)
 
 
 if __name__ == '__main__':

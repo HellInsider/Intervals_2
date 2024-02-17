@@ -56,7 +56,7 @@ class LinearRegression:
         if self.inform_set is not None:
             return self.inform_set
         
-        lower, upper = -100.0, 100.0
+        lower, upper = -20.0, 20.0
         self.inform_set = self._create_codition_band(0, lower, upper)
 
         for i in range(1, self.size):
